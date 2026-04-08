@@ -20,7 +20,15 @@ load_dotenv()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/edu_platform_ge')
+
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    raise RuntimeError("DATABASE_URL not set")
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -736,4 +744,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         seed_data()
-    app.run(debug=True)
+
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
