@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}მთავარი | Ganatleba Builder{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">ქართული საგანმანათლებლო პლატფორმის MVP</span>
+      <h1>შექმენი საკუთარი კურსები Stepik-ის მსგავსი სტრუქტურით</h1>
+      <p class="lead">თავები, გაკვეთილები, ვიდეო, დოკუმენტაცია, ტესტები checkbox-ებით, Python კოდის ამოცანები, შესაბამისობის დავალებები, კომენტარები და პროგრესი მარცხენა პანელში.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{{ url_for('creator_new_course') if current_user.is_authenticated else url_for('register') }}">კურსის შექმნა</a>
+        <a class="btn btn-secondary" href="{{ url_for('course_list') }}">დემო კურსების ნახვა</a>
+      </div>
+    </div>
+    <div class="stats-card">
+      <div><strong>{{ course_count }}</strong><span>კურსი</span></div>
+      <div><strong>{{ lesson_count }}</strong><span>გაკვეთილი</span></div>
+      <div><strong>{{ user_count }}</strong><span>მომხმარებელი</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>დემო და ბოლო კურსები</h2>
+      <a href="{{ url_for('course_list') }}">ყველას ნახვა</a>
+    </div>
+    <div class="card-grid">
+      {% for course in courses %}
+      <article class="card">
+        <h3>{{ course.title }}</h3>
+        <p>{{ course.short_description }}</p>
+        <div class="meta-row"><span>{{ course.chapters|length }} თავი</span><span>{{ course.owner.full_name }}</span></div>
+        <a class="btn btn-small" href="{{ url_for('course_overview', slug=course.slug) }}">გახსნა</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

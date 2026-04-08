@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}{{ lesson.title }} | {{ course.title }}{% endblock %}
+{% block content %}
+<section class="course-shell">
+  <div class="course-sidebar">
+    <div class="sidebar-top">
+      <a href="{{ url_for('course_overview', slug=course.slug) }}">← {{ course.title }}</a>
+      <div class="progress-line">{{ progress.passed_lessons }}/{{ progress.all_lessons }} დასრულებული</div>
+    </div>
+    {% for chapter in course.chapters %}
+      <div class="sidebar-chapter {% if progress.chapters.get(chapter.id) %}done{% endif %}">
+        <strong>{{ chapter.title }}</strong>
+        <ul class="sidebar-list">
+          {% for item in chapter.lessons %}
+          <li class="{% if item.id == lesson.id %}active{% endif %} {% if progress.lessons.get(item.id) %}done{% endif %}">
+            <a href="{{ url_for('lesson_view', slug=course.slug, lesson_slug=item.slug) }}">{{ item.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="course-main">
+    <div class="lesson-card card">
+      <div class="meta-row"><span class="badge">{{ lesson.lesson_type }}</span><span>{{ lesson.chapter.title }}</span></div>
+      <h1>{{ lesson.title }}</h1>
+      {% if lesson.intro %}<p class="lead small">{{ lesson.intro }}</p>{% endif %}
+
+      {% if lesson.text_content %}
+        <div class="markdown-body">{{ lesson.text_content.body|safe|replace('\n', '<br>') }}</div>
+      {% endif %}
+
+      {% if lesson.video_content %}
+      <div class="video-wrapper"><iframe src="{{ lesson.video_content.embed_url }}" title="ვიდეო გაკვეთილი" allowfullscreen></iframe></div>
+      {% endif %}
+
+      {% if lesson.lesson_type == 'text' %}
+      <form method="post" class="lesson-form">
+        <button class="btn">წავიკითხე და გავიგე</button>
+      </form>
+      {% elif lesson.lesson_type == 'quiz' %}
+      <form method="post" class="lesson-form">
+        {% for q in lesson.quiz_questions %}
+          <div class="question-block">
+            <h3>{{ loop.index }}. {{ q.prompt }}</h3>
+            {% for option in q.options %}
+              <label class="check-row">
+                <input type="checkbox" name="question_{{ q.id }}" value="{{ option.id }}">
+                <span>{{ option.text }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn">შემოწმება</button>
+      </form>
+      {% elif lesson.lesson_type == 'code' %}
+      <form method="post" class="lesson-form">
+        <p>{{ lesson.code_exercise.prompt }}</p>
+        <div class="code-meta">ენა: {{ lesson.code_exercise.language }}</div>
+        <textarea class="code-editor js-code-editor" name="code" data-language="python">{{ submission_result.code if submission_result and submission_result.code else lesson.code_exercise.starter_code }}</textarea>
+        <button class="btn">კოდის გაშვება და შემოწმება</button>
+      </form>
+      {% elif lesson.lesson_type == 'match' %}
+      <form method="post" class="lesson-form">
+        {% set answers = lesson.matching_pairs|map(attribute='right_text')|list %}
+        {% for pair in lesson.matching_pairs %}
+        <div class="matching-row">
+          <span>{{ pair.left_text }}</span>
+          <select name="pair_{{ pair.id }}">
+            <option value="">აირჩიე პასუხი</option>
+            {% for answer in answers %}
+              <option value="{{ answer }}">{{ answer }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endfor %}
+        <button class="btn">შემოწმება</button>
+      </form>
+      {% endif %}
+
+      {% if submission_result %}
+      <div class="result-box {% if submission_result.passed %}success-outline{% else %}warning-outline{% endif %}">
+        {% if submission_result.type == 'quiz' or submission_result.type == 'match' %}
+          <strong>შედეგი: {{ submission_result.score }} / {{ submission_result.total }}</strong>
+        {% else %}
+          <strong>{{ submission_result.message }}</strong>
+        {% endif %}
+      </div>
+
+      {% if submission_result.type == 'quiz' %}
+        {% for item in submission_result.details %}
+          <div class="review-row {% if item.passed %}correct{% else %}wrong{% endif %}">
+            <strong>{{ item.question.prompt }}</strong>
+            <div>სწორი ვარიანტები: {{ item.correct_ids|join(', ') }}</div>
+            <div>შენი არჩევანი: {{ item.selected_ids|join(', ') if item.selected_ids else '—' }}</div>
+            {% if item.question.explanation %}<p>{{ item.question.explanation }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      {% elif submission_result.type == 'code' %}
+        {% for case in submission_result.cases %}
+          <div class="review-row {% if case.passed %}correct{% else %}wrong{% endif %}">
+            <div><strong>Input:</strong> <pre>{{ case.input }}</pre></div>
+            <div><strong>Expected:</strong> <pre>{{ case.expected }}</pre></div>
+            <div><strong>Actual:</strong> <pre>{{ case.actual }}</pre></div>
+          </div>
+        {% endfor %}
+      {% elif submission_result.type == 'match' %}
+        {% for item in submission_result.details %}
+          <div class="review-row {% if item.passed %}correct{% else %}wrong{% endif %}">
+            <strong>{{ item.pair.left_text }}</strong>
+            <div>სწორი პასუხი: {{ item.pair.right_text }}</div>
+            <div>შენი პასუხი: {{ item.selected or '—' }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% endif %}
+
+      <div class="reaction-row top-gap">
+        <form method="post" action="{{ url_for('react_lesson', lesson_id=lesson.id, action='like') }}"><button class="reaction-btn">👍 {{ lesson_score_counts(lesson)[0] }}</button></form>
+        <form method="post" action="{{ url_for('react_lesson', lesson_id=lesson.id, action='dislike') }}"><button class="reaction-btn">👎 {{ lesson_score_counts(lesson)[1] }}</button></form>
+      </div>
+
+      <div class="pager-row">
+        {% if prev_lesson %}<a class="btn btn-secondary" href="{{ url_for('lesson_view', slug=course.slug, lesson_slug=prev_lesson.slug) }}">← წინა</a>{% endif %}
+        {% if next_lesson %}<a class="btn" href="{{ url_for('lesson_view', slug=course.slug, lesson_slug=next_lesson.slug) }}">შემდეგი →</a>{% endif %}
+      </div>
+    </div>
+
+    <div class="card comments-card">
+      <h2>კომენტარები</h2>
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('add_comment', lesson_id=lesson.id) }}" class="comment-form">
+        <textarea name="body" placeholder="დაწერე კომენტარი"></textarea>
+        <button class="btn btn-small">დამატება</button>
+      </form>
+      {% else %}
+      <p>კომენტარის დასაწერად უნდა შეხვიდე სისტემაში.</p>
+      {% endif %}
+
+      {% for comment in comments %}
+      <div class="comment">
+        <div class="comment-head"><strong>{{ comment.author.full_name }}</strong><span>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+        <p>{{ comment.body }}</p>
+        <div class="reaction-row compact">
+          <form method="post" action="{{ url_for('react_comment', comment_id=comment.id, action='like') }}"><button class="reaction-btn">👍 {{ comment_score(comment)[0] }}</button></form>
+          <form method="post" action="{{ url_for('react_comment', comment_id=comment.id, action='dislike') }}"><button class="reaction-btn">👎 {{ comment_score(comment)[1] }}</button></form>
+        </div>
+        {% if current_user.is_authenticated %}
+        <form method="post" action="{{ url_for('add_comment', lesson_id=lesson.id) }}" class="reply-form">
+          <input type="hidden" name="parent_id" value="{{ comment.id }}">
+          <textarea name="body" placeholder="უპასუხე კომენტარს"></textarea>
+          <button class="btn btn-secondary btn-small">პასუხი</button>
+        </form>
+        {% endif %}
+        {% for reply in comment.replies %}
+        <div class="reply">
+          <div class="comment-head"><strong>{{ reply.author.full_name }}</strong><span>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+          <p>{{ reply.body }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('.js-code-editor').forEach(function(el) {
+    var editor = CodeMirror.fromTextArea(el, {
+      mode: 'python',
+      theme: 'material-darker',
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      lineWrapping: false,
+      viewportMargin: Infinity
+    });
+    editor.setSize('100%', 360);
+    var form = el.closest('form');
+    if (form) {
+      form.addEventListener('submit', function() { editor.save(); });
+    }
+  });
+</script>
+{% endblock %}

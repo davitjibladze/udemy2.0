@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}კურსები | Ganatleba Builder{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h1>ყველა კურსი</h1>
+      {% if current_user.is_authenticated %}<a class="btn btn-small" href="{{ url_for('creator_new_course') }}">ახალი კურსი</a>{% endif %}
+    </div>
+    <div class="card-grid">
+      {% for course in courses %}
+      <article class="card course-card">
+        <h3>{{ course.title }}</h3>
+        <p>{{ course.short_description }}</p>
+        <div class="meta-row"><span>{{ course.owner.full_name }}</span><span>{{ course.chapters|length }} თავი</span></div>
+        <a class="btn btn-small" href="{{ url_for('course_overview', slug=course.slug) }}">კურსზე გადასვლა</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

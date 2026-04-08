@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}ადმინი{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+<h1>ადმინისტრატორის პანელი</h1>
+<div class="builder-grid">
+  <div class="card">
+    <h2>მომხმარებლები</h2>
+    <table class="table">
+      <tr><th>ID</th><th>სახელი</th><th>ელფოსტა</th><th>როლი</th></tr>
+      {% for user in users %}
+      <tr><td>{{ user.id }}</td><td>{{ user.full_name }}</td><td>{{ user.email }}</td><td>{% if user.is_admin %}ადმინი{% else %}მომხმარებელი{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>კურსები</h2>
+    <table class="table">
+      <tr><th>ID</th><th>სახელი</th><th>ავტორი</th><th>სტატუსი</th></tr>
+      {% for course in courses %}
+      <tr><td>{{ course.id }}</td><td>{{ course.title }}</td><td>{{ course.owner.full_name }}</td><td>{% if course.is_published %}გამოქვეყნებული{% else %}დამალული{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+</div></section>
+{% endblock %}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ka">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Ganatleba Builder{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="container topbar-inner">
+        <a href="{{ url_for('home') }}" class="brand">განათლება<span>Builder</span></a>
+        <nav class="nav">
+            <a href="{{ url_for('course_list') }}">კურსები</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('creator_dashboard') }}">ჩემი კურსები</a>
+                {% if current_user.is_admin %}<a href="{{ url_for('admin_dashboard') }}">ადმინი</a>{% endif %}
+                <a href="{{ url_for('logout') }}">გასვლა</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">შესვლა</a>
+                <a class="btn btn-small" href="{{ url_for('register') }}">დარეგისტრირდი</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container flashes">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div class="container footer-inner">
+        <p>ქართული აუდიტორიისთვის შექმნილი MVP — კურსები, თავები, ტესტები, კოდი და კომენტარები.</p>
+    </div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

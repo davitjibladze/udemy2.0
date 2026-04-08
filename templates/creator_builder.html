@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}კონსტრუქტორი | {{ course.title }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+<div class="section-head"><h1>{{ course.title }} — კონსტრუქტორი</h1><a class="btn btn-small" href="{{ url_for('creator_add_lesson', course_id=course.id) }}">გაკვეთილის დამატება</a></div>
+<div class="builder-grid">
+  <div class="card">
+    <h2>თავის დამატება</h2>
+    <form method="post" action="{{ url_for('creator_add_chapter', course_id=course.id) }}" class="stack-form">
+      <label>თავის სახელი<input type="text" name="title"></label>
+      <button class="btn btn-small">დამატება</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>სტრუქტურა</h2>
+    {% for chapter in course.chapters %}
+      <div class="builder-chapter">
+        <strong>{{ chapter.position }}. {{ chapter.title }}</strong>
+        <ul>
+          {% for lesson in chapter.lessons %}
+            <li>{{ lesson.position }}. {{ lesson.title }} <span class="badge">{{ lesson.lesson_type }}</span></li>
+          {% else %}
+            <li>ჯერ გაკვეთილი არ არის დამატებული.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% else %}
+      <p>კურსში ჯერ თავი არ არის.</p>
+    {% endfor %}
+  </div>
+</div>
+</div></section>
+{% endblock %}

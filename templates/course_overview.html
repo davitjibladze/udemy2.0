@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ course.title }} | Ganatleba Builder{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="overview-grid">
+      <div class="card">
+        <h1>{{ course.title }}</h1>
+        <p class="lead small">{{ course.description }}</p>
+        <div class="meta-row"><span>ავტორი: {{ course.owner.full_name }}</span><span>{{ progress.passed_lessons }}/{{ progress.all_lessons }} დასრულებული</span></div>
+        <div class="reaction-row">
+          <form method="post" action="{{ url_for('react_course', slug=course.slug, action='like') }}"><button class="reaction-btn">👍 {{ course_score_counts(course)[0] }}</button></form>
+          <form method="post" action="{{ url_for('react_course', slug=course.slug, action='dislike') }}"><button class="reaction-btn">👎 {{ course_score_counts(course)[1] }}</button></form>
+        </div>
+        {% if first_lesson %}
+          <a class="btn" href="{{ url_for('lesson_view', slug=course.slug, lesson_slug=first_lesson.slug) }}">სწავლის დაწყება</a>
+        {% endif %}
+      </div>
+      <aside class="card">
+        <h3>სტრუქტურა</h3>
+        {% for chapter in course.chapters %}
+          <div class="sidebar-chapter {% if progress.chapters.get(chapter.id) %}done{% endif %}">
+            <strong>{{ chapter.title }}</strong>
+            <ul class="sidebar-list static">
+              {% for lesson in chapter.lessons %}
+              <li class="{% if progress.lessons.get(lesson.id) %}done{% endif %}">{{ lesson.title }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

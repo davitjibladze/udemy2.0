@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}ახალი კურსი{% endblock %}
+{% block content %}
+<section class="section"><div class="container narrow">
+<div class="card">
+  <h1>ახალი კურსის შექმნა</h1>
+  <form method="post" class="stack-form">
+    <label>სათაური<input type="text" name="title"></label>
+    <label>მოკლე აღწერა<textarea name="short_description"></textarea></label>
+    <label>სრული აღწერა<textarea name="description"></textarea></label>
+    <button class="btn">კურსის შექმნა</button>
+  </form>
+</div>
+</div></section>
+{% endblock %}

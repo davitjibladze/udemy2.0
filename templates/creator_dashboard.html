@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}ჩემი კურსები{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+<div class="section-head"><h1>კურსების პანელი</h1><a class="btn" href="{{ url_for('creator_new_course') }}">ახალი კურსი</a></div>
+<div class="card-grid">
+{% for course in courses %}
+<article class="card">
+  <h3>{{ course.title }}</h3>
+  <p>{{ course.short_description }}</p>
+  <div class="meta-row"><span>{{ course.chapters|length }} თავი</span><span>{{ course.slug }}</span></div>
+  <div class="action-row">
+    <a class="btn btn-small" href="{{ url_for('creator_builder', course_id=course.id) }}">კონსტრუქტორი</a>
+    <a class="btn btn-secondary btn-small" href="{{ url_for('course_overview', slug=course.slug) }}">ნახვა</a>
+  </div>
+</article>
+{% endfor %}
+</div>
+</div></section>
+{% endblock %}
